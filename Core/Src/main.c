@@ -93,7 +93,10 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   LCDInit();
-  LCDSendString("TEST",0,0);
+  LCDSendString("HELLO WORLD",0,0);
+  LCDSendString("Test 1234",1,0);
+  LCDSendString("______",2,0);
+  LCDSendString("+++++++",3,0);
   /* USER CODE END 2 */
 
   /* Infinite loop */

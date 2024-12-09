@@ -2,15 +2,15 @@
 #include "i2c.h"
 #include "gpio.h"
 
-#define LCD_ADDR   0x3F
+#define LCD_ADDR   0x27
 
 //    Piggyboard Configuration
 //    P7 P6 P5 P4 P3 P2 P1 P0
 //    D7 D6 D5 D4 BT E RW RS 
 
-#define PIN_RS (1 << 0)
-#define PIN_EN (1 << 2)
-#define PIN_BT (1 << 3)
+#define PIN_RS 0b00000001 
+#define PIN_EN 0b00000100  
+#define PIN_BT 0b00001000
 
 void LCDInit(void);
 void LCDSendCommand(uint8_t cmd);
@@ -19,7 +19,16 @@ void LCDSendData(uint8_t data);
 
 void LCDInit(void)
 {
-    HAL_Delay(500);
+    HAL_Delay(50);
+
+    LCDSendCommand(0x30);
+    HAL_Delay(5);
+    LCDSendCommand(0x30);
+    HAL_Delay(5);
+    LCDSendCommand(0x30);
+    HAL_Delay(5);
+    LCDSendCommand(0x2);
+    HAL_Delay(5);
     // 4-bit mode, 2 lines, 5x8 format
 	LCDSendCommand(0x28);
     HAL_Delay(5);
@@ -58,7 +67,7 @@ void LCDSendCommand(uint8_t cmd)
         }else{
             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
         }
-        HAL_Delay(5);
+        HAL_Delay(1);
     }
 
 }
@@ -81,7 +90,7 @@ void LCDSendData(uint8_t data)
         }else{
             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
         }
-        HAL_Delay(5);
+        HAL_Delay(1);
     }
     
 
@@ -114,9 +123,9 @@ void LCDSendString(char *str,uint8_t row, uint8_t col)
 
     LCDSendCommand(pos);
 
-    for(int i=0;str[i]!=0;i++)
+    while(*str)
     {
-        LCDSendData(str[i]);
+        LCDSendData((uint8_t)*str++);
     }
 
 }
