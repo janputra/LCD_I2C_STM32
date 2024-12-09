@@ -1,6 +1,6 @@
 #include "lcd.h"
 #include "i2c.h"
-
+#include "gpio.h"
 
 #define LCD_ADDR   0x3F
 
@@ -12,24 +12,29 @@
 #define PIN_EN (1 << 2)
 #define PIN_BT (1 << 3)
 
+void LCDInit(void);
+void LCDSendCommand(uint8_t cmd);
+void LCDSendData(uint8_t data);
+
+
 void LCDInit(void)
 {
-    HAL_Delay(50);
+    HAL_Delay(500);
     // 4-bit mode, 2 lines, 5x8 format
 	LCDSendCommand(0x28);
-    HAL_Delay(1);
+    HAL_Delay(5);
 	// display & cursor home (keep this!)
 	LCDSendCommand(0x02);
-    HAL_Delay(1);
+    HAL_Delay(5);
     //  mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
     LCDSendCommand(0x06);
-     HAL_Delay(1);
+     HAL_Delay(5);
 	// display on, cursor off, cursor blink off
 	LCDSendCommand(0x0C);
-     HAL_Delay(1);
+     HAL_Delay(5);
 	// clear display (optional here)
 	LCDSendCommand(0x01);
-     HAL_Delay(1);
+     HAL_Delay(5);
     
 
 }
@@ -47,8 +52,13 @@ void LCDSendCommand(uint8_t cmd)
 
     for (int i = 0 ; i < 4;i++)
     {
-        HAL_I2C_Master_Transmit(&hi2c1, LCD_ADDR<<1,&buffer[i],1,100);
-        HAL_Delay(1);
+        if(HAL_I2C_Master_Transmit(&hi2c1, LCD_ADDR<<1,&buffer[i],1,100) == HAL_ERROR)
+        {
+            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_SET);
+        }else{
+            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
+        }
+        HAL_Delay(5);
     }
 
 }
@@ -65,8 +75,13 @@ void LCDSendData(uint8_t data)
     buffer[3] = lsb|PIN_RS|PIN_BT;
     for (int i = 0 ; i < 4;i++)
     {
-        HAL_I2C_Master_Transmit(&hi2c1, LCD_ADDR<<1,&buffer[i],1,100);
-        HAL_Delay(1);
+        if(HAL_I2C_Master_Transmit(&hi2c1, LCD_ADDR<<1,&buffer[i],1,100) == HAL_ERROR)
+        {
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_SET);
+        }else{
+            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_14, GPIO_PIN_RESET);
+        }
+        HAL_Delay(5);
     }
     
 
@@ -101,7 +116,7 @@ void LCDSendString(char *str,uint8_t row, uint8_t col)
 
     for(int i=0;str[i]!=0;i++)
     {
-        LCDSendData((uint8_t)str[i]);
+        LCDSendData(str[i]);
     }
 
 }
